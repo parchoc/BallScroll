@@ -33,6 +33,7 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         self.settings_dict = {
             'tick': 10,
             'delay': 10,
+            'power': 100
         }
         self.startButton.clicked.connect(self.start)
         self.stopButton.clicked.connect(self.stop)
@@ -43,10 +44,10 @@ class BallScroll(QMainWindow, Ui_MainWindow):
             if self.model_path != self.fileEdit.text():
                 self.model_path = self.fileEdit.text()
                 self.model = load_model(self.model_path)
-                print(self.model.summary())
                 self.statusBar().showMessage('Файл загружен', 10000)
                 self.max_length = self.model.input_shape[1]
-            self.settings_dict['tick'] = int(self.tickEdit.text())
+            self.settings_dict['delay'] = int(self.delayEdit.text())
+            self.settings_dict['power'] = int(self.scrollEdit.text())
             self.startButton.setEnabled(False)
             self.stopButton.setEnabled(True)
             self.timer_id = self.startTimer(self.settings_dict['tick'])
@@ -74,7 +75,7 @@ class BallScroll(QMainWindow, Ui_MainWindow):
                     self.typeLabel.setText(move_type)
                     print(predicted)
                     if predicted:
-                        pyautogui.scroll(self.movement_sign[predicted]*100)
+                        pyautogui.scroll(self.movement_sign[predicted]*self.settings_dict['power'])
                 self.zero_count = self.zero_count + 1
             elif self.zero_count < self.settings_dict['delay']:
                 self.zero_count = self.zero_count + 1
