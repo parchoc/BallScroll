@@ -1,10 +1,9 @@
 from mainwindow import Ui_MainWindow
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
-from keras.models import load_model
 from mousePos import getDirection
 import pyautogui
 import numpy as np
-from keras.utils import to_categorical
+from tensorflow import keras
 
 
 class BallScroll(QMainWindow, Ui_MainWindow):
@@ -43,7 +42,7 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         try:
             if self.model_path != self.fileEdit.text():
                 self.model_path = self.fileEdit.text()
-                self.model = load_model(self.model_path)
+                self.model = keras.models.load_model(self.model_path)
                 self.statusBar().showMessage('Файл загружен', 10000)
                 self.max_length = self.model.input_shape[1]
             self.settings_dict['delay'] = int(self.delayEdit.text())
@@ -67,7 +66,7 @@ class BallScroll(QMainWindow, Ui_MainWindow):
                 if len(self.code) <= self.max_length:
                     if len(self.code) < self.max_length:
                         self.code.extend([0]*(self.max_length - len(self.code)))
-                    code_cat = to_categorical(self.code, 10)
+                    code_cat = keras.utils.to_categorical(self.code, 10)
                     code_cat = code_cat[np.newaxis, :, :]
                     predicted = self.model.predict(code_cat)
                     predicted = predicted.argmax()
