@@ -2,7 +2,6 @@ import pyautogui
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QSystemTrayIcon, QMenu, QAction
 from numpy import newaxis
 from tensorflow import keras
-
 from mainwindow import Ui_MainWindow
 from mousePos import getDirection
 
@@ -20,6 +19,7 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         self.zero_count = 0
         self.max_length = 100
         self.model_path = ''
+        self.isTrayClose = False
         # tray menu
         self.trayIcon = QSystemTrayIcon(self.windowIcon(), self)
         self.trayIcon.setToolTip('BallScroll')
@@ -27,7 +27,7 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         self.openWindowAction = QAction('Развернуть', self)
         self.closeAction = QAction('Выйти', self)
         self.openWindowAction.triggered.connect(self.show)
-        self.closeAction.triggered.connect(self.close)
+        self.closeAction.triggered.connect(self.trayClose)
         self.trayMenu.addActions([self.openWindowAction, self.closeAction])
         self.trayIcon.setContextMenu(self.trayMenu)
         self.trayIcon.activated.connect(self.trayActivated)
@@ -112,7 +112,9 @@ class BallScroll(QMainWindow, Ui_MainWindow):
             self.fileEdit.setText(file_path[0])
 
     def closeEvent(self, event):
-        if self.isVisible():
+        if self.isTrayClose:
+            event.accept()
+        else:
             self.hide()
             event.ignore()
 
@@ -120,3 +122,7 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         if reason == QSystemTrayIcon.Trigger or reason == QSystemTrayIcon.DoubleClick:
             if not self.isVisible():
                 self.show()
+
+    def trayClose(self):
+        self.isTrayClose = True
+        self.close()

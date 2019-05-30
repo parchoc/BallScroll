@@ -1,7 +1,5 @@
 import sys
-
 from fbs_runtime.application_context import ApplicationContext
-
 from ballscroll import BallScroll
 
 
