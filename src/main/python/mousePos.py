@@ -1,6 +1,3 @@
-from PIL import ImageDraw, Image
-
-
 def cmp(a, b):
     return (a > b) - (a < b)
 
@@ -44,30 +41,3 @@ def codeToPoints(codes_list):
             points[i] = (points[i][0] + abs(min_x), points[i][1] + abs(min_y))
 
     return points
-
-
-def pointsToimage(points):
-    width = 0
-    height = 0
-    for point in points:
-        if point[0] > width:
-            width = point[0]
-        if point[1] > height:
-            height = point[1]
-    image = Image.new('1', (width+1, height+1), 1)
-    drawer = ImageDraw.Draw(image)
-    drawer.point(points, 0)
-
-    return image
-
-
-def fileToImage(path, name='image.jpg'):
-    try:
-        with open(path, 'r') as file:
-            code = file.readline()
-            code = [int(ch) for ch in code]
-            points = codeToPoints(code)
-            image = pointsToimage(points)
-            image.save(name)
-    except FileNotFoundError:
-        print('File doesnt exist')

@@ -1,13 +1,14 @@
-from PyQt5 import QtWidgets
 import sys
+from fbs_runtime.application_context import ApplicationContext
 from ballscroll import BallScroll
 
 
 def main():
-    app = QtWidgets.QApplication(sys.argv)
+    appctxt = ApplicationContext()
     window = BallScroll()
     window.show()
-    app.exec_()
+    exit_code = appctxt.app.exec_()
+    sys.exit(exit_code)
 
 
 if __name__ == '__main__':
