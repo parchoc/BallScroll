@@ -86,7 +86,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(_translate("MainWindow", "Задержка"))
         self.delayEdit.setText(_translate("MainWindow", "10"))
         self.label_3.setText(_translate("MainWindow", "Сила прокрутки"))
-        self.scrollEdit.setText(_translate("MainWindow", "100"))
+        self.scrollEdit.setText(_translate("MainWindow", "2"))
         self.startButton.setText(_translate("MainWindow", "Старт"))
         self.stopButton.setText(_translate("MainWindow", "Стоп"))
 

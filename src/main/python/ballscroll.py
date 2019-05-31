@@ -4,6 +4,7 @@ from numpy import newaxis
 from tensorflow import keras
 from mainwindow import Ui_MainWindow
 from mousePos import getDirection
+from configparser import ConfigParser
 
 
 class BallScroll(QMainWindow, Ui_MainWindow):
@@ -18,7 +19,6 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         self.recordStart = False
         self.zero_count = 0
         self.max_length = 100
-        self.model_path = ''
         self.isTrayClose = False
         # tray menu
         self.trayIcon = QSystemTrayIcon(self.windowIcon(), self)
@@ -37,6 +37,14 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         self.trayIcon.setContextMenu(self.trayMenu)
         self.trayIcon.activated.connect(self.trayActivated)
         self.trayIcon.show()
+        # settings
+        self.config = ConfigParser()
+        try:
+            with open('config.ini', 'r') as config_file:
+                self.config.read_file(config_file)
+                self.initUI()
+        except FileNotFoundError:
+            self.setDefaultSettings()
 
         self.movement_types = {
             0: 'Ничего',
@@ -48,29 +56,25 @@ class BallScroll(QMainWindow, Ui_MainWindow):
             1: -1,
             2: 1
         }
-        self.settings_dict = {
-            'tick': 10,
-            'delay': 10,
-            'power': 100
-        }
+
         self.startButton.clicked.connect(self.start)
         self.stopButton.clicked.connect(self.stop)
         self.browseButton.clicked.connect(self.browse)
 
     def start(self):
         try:
-            if self.model_path != self.fileEdit.text():
-                self.model_path = self.fileEdit.text()
-                self.model = keras.models.load_model(self.model_path)
+            if self.config['model']['file'] != self.fileEdit.text():
+                self.config['model']['file'] = self.fileEdit.text()
+                self.model = keras.models.load_model(self.config['model']['file'])
                 self.statusBar().showMessage('Файл загружен', 10000)
                 self.max_length = self.model.input_shape[1]
-            self.settings_dict['delay'] = int(self.delayEdit.text())
-            self.settings_dict['power'] = int(self.scrollEdit.text())
+            self.config['mouse']['delay'] = self.delayEdit.text()
+            self.config['mouse']['power'] = self.scrollEdit.text()
             self.startButton.setEnabled(False)
             self.stopButton.setEnabled(True)
             self.startAction.setEnabled(False)
             self.stopAction.setEnabled(True)
-            self.timer_id = self.startTimer(self.settings_dict['tick'])
+            self.timer_id = self.startTimer(int(self.config['mouse']['tick']))
         except ValueError:
             self.statusBar().showMessage('Неверный файл')
         except ImportError:
@@ -82,7 +86,7 @@ class BallScroll(QMainWindow, Ui_MainWindow):
             if (x, y) != (self.x_prev, self.y_prev):
                 self.code.append(getDirection(self.x_prev, self.y_prev, x, y))
                 self.zero_count = 0
-            elif self.zero_count == self.settings_dict['delay']:
+            elif self.zero_count == int(self.config['mouse']['delay']):
                 self.recordStart = False
                 if len(self.code) <= self.max_length:
                     if len(self.code) < self.max_length:
@@ -95,9 +99,9 @@ class BallScroll(QMainWindow, Ui_MainWindow):
                     self.typeLabel.setText(move_type)
                     print(predicted)
                     if predicted:
-                        pyautogui.scroll(self.movement_sign[predicted]*self.settings_dict['power'])
+                        pyautogui.scroll(self.movement_sign[predicted] * int(self.config['mouse']['power']))
                 self.zero_count = self.zero_count + 1
-            elif self.zero_count < self.settings_dict['delay']:
+            elif self.zero_count < int(self.config['mouse']['delay']):
                 self.zero_count = self.zero_count + 1
         else:
             if (x, y) != (self.x_prev, self.y_prev):
@@ -122,6 +126,8 @@ class BallScroll(QMainWindow, Ui_MainWindow):
 
     def closeEvent(self, event):
         if self.isTrayClose:
+            with open('config.ini', 'w') as config_file:
+                self.config.write(config_file)
             event.accept()
         else:
             self.hide()
@@ -135,3 +141,20 @@ class BallScroll(QMainWindow, Ui_MainWindow):
     def trayClose(self):
         self.isTrayClose = True
         self.close()
+
+    def setDefaultSettings(self):
+        self.config['DEFAULT'] = {
+            'delay': '10',
+            'tick': '10',
+            'power': '2',
+            'file': ''
+        }
+        self.config['mouse'] = {}
+        self.config['model'] = {}
+        with open('config.ini', 'w') as config_file:
+            self.config.write(config_file)
+
+    def initUI(self):
+        self.fileEdit.setText(self.config['model']['file'])
+        self.delayEdit.setText(self.config['mouse']['delay'])
+        self.scrollEdit.setText((self.config['mouse']['power']))
