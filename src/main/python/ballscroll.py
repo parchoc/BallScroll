@@ -68,9 +68,12 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         self.delayEdit.setValidator(self.delay_validator)
         self.scrollEdit.setValidator(self.scroll_validator)
 
+        self.scrollEdit.editingFinished.connect(self.updatePower)
+        self.delayEdit.editingFinished.connect(self.updateDelay)
+
     def start(self):
         try:
-            if self.config['model']['file'] != self.fileEdit.text():
+            if self.config['model']['file'] != self.fileEdit.text() or self.model is None:
                 self.config['model']['file'] = self.fileEdit.text()
                 self.model = keras.models.load_model(self.config['model']['file'])
                 self.statusBar().showMessage('Файл загружен', 10000)
@@ -165,3 +168,9 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         self.fileEdit.setText(self.config['model']['file'])
         self.delayEdit.setText(self.config['mouse']['delay'])
         self.scrollEdit.setText((self.config['mouse']['power']))
+
+    def updatePower(self):
+        self.config['mouse']['power'] = self.scrollEdit.text()
+
+    def updateDelay(self):
+        self.config['mouse']['delay'] = self.delayEdit.text()
