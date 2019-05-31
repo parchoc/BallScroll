@@ -1,5 +1,7 @@
 import pyautogui
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QSystemTrayIcon, QMenu, QAction
+from PyQt5.QtGui import QRegExpValidator
+from PyQt5.QtCore import QRegExp
 from numpy import newaxis
 from tensorflow import keras
 from mainwindow import Ui_MainWindow
@@ -60,6 +62,11 @@ class BallScroll(QMainWindow, Ui_MainWindow):
         self.startButton.clicked.connect(self.start)
         self.stopButton.clicked.connect(self.stop)
         self.browseButton.clicked.connect(self.browse)
+        # validators
+        self.delay_validator = QRegExpValidator(QRegExp(r'\d+'), self)
+        self.scroll_validator = QRegExpValidator(QRegExp(r'-?\d+'), self)
+        self.delayEdit.setValidator(self.delay_validator)
+        self.scrollEdit.setValidator(self.scroll_validator)
 
     def start(self):
         try:
